@@ -35,9 +35,8 @@ class ExportHMCHandler(BaseHandler):
 
         staff_no = self.get_argument('staffNo')
         name = self.get_argument('name')
-        get_year = self.get_argument('getYear')
 
-        url = ExportModel.export_hmc()
+        url = ExportModel.export_hmc(staff_no, name)
         data = {
             'url': url
         }

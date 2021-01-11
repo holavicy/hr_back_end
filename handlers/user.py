@@ -58,14 +58,13 @@ class HuaMingCeHandler(BaseHandler):
         page_size = self.get_argument('pageSize')
         staff_no = self.get_argument('staffNo')
         name = self.get_argument('name')
-        get_year = self.get_argument('getYear')
         response = {
             'code': 0,
             'data': '',
             'errorMsg': ''
         }
 
-        total_num, df_records = UserModel.hua_ming_ce(page, page_size)
+        total_num, df_records = UserModel.hua_ming_ce(page, page_size, staff_no, name)
         if isinstance(total_num, int):
             total_num = total_num
         else:
