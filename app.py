@@ -3,12 +3,16 @@ import tornado.httpserver
 import tornado.ioloop
 import logging
 import time
+from handlers import dd as dd_handlers
 from handlers import user as user_handlers
 from handlers import export as export_handlers
 
 HANDLERS = [
+    # 登录
+    (r"/api/getUserInfo", dd_handlers.UserHandler),
+    # 员工管理
     (r"/api/huaMingCe", user_handlers.HuaMingCeHandler),
-    # 报表相关
+    # 导出
     (r"/api/exportHuaMingCe", export_handlers.ExportHMCHandler),
 ]
 logging.basicConfig(filename=f"./log/web.{time.strftime('%Y_%m_%d')}.txt",
