@@ -32,10 +32,8 @@ class UserModel(object):
     and job.ismainjob = 'Y'\
     and job.lastflag = 'Y'\
     and ss.code = '%s'" % (code)
-            print(sql)
             df_records = pd.read_sql(sql, con=cls.db_nc)
             df_records = df_records.to_json(orient='records')
-            print(df_records)
             return df_records
         except Exception as e:
             print(e)
@@ -46,12 +44,9 @@ class UserModel(object):
         try:
             # 获取当前时间
             now = datetime.now()
-            print(now)
 
             # 获取当前年份
             year = now.year
-            print(type(year))
-            print(year)
 
             name_sql = ''
             staff_no_sql = ''
@@ -124,8 +119,6 @@ and jt.name in ('正式员工','全职','车间在职', '试用期员工', '退�
 %s %s
 order by d.joindate desc'''%(year, name_sql, staff_no_sql)
 
-            print(sql)
-
             num_sql = '''select count(ss.code) as TOTALNUM
 from bd_psndoc ss
 inner join hi_psnjob job on ss.pk_psndoc = job.pk_psndoc
@@ -196,9 +189,20 @@ order by d.joindate desc''' % (name_sql, staff_no_sql)
 
             df_records = pd.read_sql(sql, con=cls.db_nc)
             user_list = []
+            dept_dic = {}
             for index, row in df_records.iterrows():
-                dept_list = cls.get_dept_list(row[40], [])
-                row['dept_list'] = dept_list
+                last_dept = row[40]
+
+                # dept_list = cls.get_dept_list(row[40], [])
+                # row['dept_list'] = dept_list
+
+                if last_dept in dept_dic:
+                    dept_list = dept_dic[last_dept]
+                    row['dept_list'] = dept_list
+                else:
+                    dept_list = cls.get_dept_list(last_dept, [])
+                    dept_dic[last_dept] = dept_list
+                    row['dept_list'] = dept_list
                 user_list.append(row)
 
             df = pd.DataFrame(user_list)
