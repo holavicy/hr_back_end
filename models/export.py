@@ -107,7 +107,7 @@ class ExportModel(object):
 
             now = datetime.datetime.now().strftime('%Y%m%d')
             timestamp = str(time())
-            filename = 'files/export/huamingce_ ' + now + '_' + timestamp + ".xls"
+            filename = 'files/export/huamingce_' + now + '_' + timestamp + ".xls"
             book.save(filename)
 
             return 'export/huamingce_' + now + '_' + timestamp + ".xls"
