@@ -116,7 +116,7 @@ and job.ismainjob = 'Y'
 and job.lastflag = 'Y'
 and ss.name not like '%%测试%%'
 and jt.name in ('正式员工','全职','车间在职', '试用期员工', '退休返聘') 
-and ss.code not like '%L%' 
+and ss.code not like '%%L%%' 
 %s %s
 order by d.joindate desc'''%(year, name_sql, staff_no_sql)
 
@@ -171,7 +171,7 @@ and job.ismainjob = 'Y'
 and job.lastflag = 'Y'
 and ss.name not like '%%测试%%'
 and jt.name in ('正式员工','全职','车间在职', '试用期员工', '退休返聘') 
-and ss.code not like '%L%' 
+and ss.code not like '%%L%%' 
 %s %s
 order by d.joindate desc''' % (name_sql, staff_no_sql)
 
