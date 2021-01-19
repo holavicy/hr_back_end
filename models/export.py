@@ -84,8 +84,8 @@ class ExportModel(object):
                 sheet.write(index + 1, 32, item['JTAGE'])
                 sheet.write(index + 1, 33, item['MXAGE'])
                 sheet.write(index + 1, 34, item['ZWMC'])
-                sheet.write(index + 1, 35, item['ZHIJI'])
-                sheet.write(index + 1, 36, item['ZWJB'])
+                sheet.write(index + 1, 35, item['ZWJB'])
+                sheet.write(index + 1, 36, item['ZHIJI'])
                 sheet.write(index + 1, 37, item['POSTSERIESNAME'])
                 sheet.write(index + 1, 38, item['JOBTYPENAME'])
 
