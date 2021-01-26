@@ -92,7 +92,7 @@ left join (
      where jt.name in ('正式员工','全职','车间在职', '退休返聘')
      group by job.pk_psndoc) b on ss.pk_psndoc = b.pk_psndoc
 left join (
-      select ss.pk_psndoc,bd.name as zcname, bd2.name as zcdengji,hpt.creationtime
+      select ss.pk_psndoc,bd.name as zcname, bd2.name as zcdengji,hpt.begindate
       from bd_psndoc ss
       inner join hi_psndoc_title hpt on ss.pk_psndoc = hpt.pk_psndoc
       inner join bd_defdoc bd on hpt.pk_techposttitle  = bd.pk_defdoc
