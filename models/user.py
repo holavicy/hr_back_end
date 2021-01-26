@@ -61,7 +61,7 @@ CASE ss.sex  WHEN 1 THEN '男'  WHEN 2 THEN '女'  ELSE '其他' END as sex ,
 bd2.name as hukouxingzhi , br2.name as hukousuozaidi, bd3.name as zhengzhimianmao , bd4.name as hunyinzhuangkuang ,
 ss.mobile,bp.name as zhengjianleixing, ss.id as zhengjianhao , hpc.enddate as youxiaoqi, ss.censusaddr, ss.glbdef1,
 ss.birthdate,%d - (REGEXP_SUBSTR(ss.birthdate,'(\d){4}')) + 1 as age,d.joindate,hp.begindate as muxianbegindate,
-c.zcdengji,c.zcname,c.begindate,bd5.name as xueli,hpe.school,hpe.major,hpe.begindate,hpe.enddate,oj.jobname as zwmc, ojr.jobrankname as zwjb,
+c.zcdengji,c.zcname,c.CREATIONTIME,bd5.name as xueli,hpe.school,hpe.major,hpe.begindate,hpe.enddate,oj.jobname as zwmc, ojr.jobrankname as zwjb,
 ojl.name as zhiji,ops.postseriesname,jt.name as jobTypeName,hpct.ifprop, hpct.probegindate , hpct.probenddate,b.zzdate,
 hpl.linkman as linkman, hpl.mobile as linkmanMobile,job.pk_dept,
 trunc(months_between(to_date(sysdate),to_date(d.joindate, 'yyyy-mm-dd'))/12) as jtAge,
@@ -92,7 +92,7 @@ left join (
      where jt.name in ('正式员工','全职','车间在职', '退休返聘')
      group by job.pk_psndoc) b on ss.pk_psndoc = b.pk_psndoc
 left join (
-      select ss.pk_psndoc,bd.name as zcname, bd2.name as zcdengji,hpt.begindate
+      select ss.pk_psndoc,bd.name as zcname, bd2.name as zcdengji,hpt.begindate as CREATIONTIME
       from bd_psndoc ss
       inner join hi_psndoc_title hpt on ss.pk_psndoc = hpt.pk_psndoc
       inner join bd_defdoc bd on hpt.pk_techposttitle  = bd.pk_defdoc
@@ -147,7 +147,7 @@ left join (
      where jt.name in ('正式员工','全职','车间在职', '退休返聘') 
      group by job.pk_psndoc) b on ss.pk_psndoc = b.pk_psndoc  
 left join (
-      select ss.pk_psndoc,bd.name as zcname, bd2.name as zcdengji,hpt.begindate 
+      select ss.pk_psndoc,bd.name as zcname, bd2.name as zcdengji,hpt.begindate as CREATIONTIME
       from bd_psndoc ss
       inner join hi_psndoc_title hpt on ss.pk_psndoc = hpt.pk_psndoc
       inner join bd_defdoc bd on hpt.pk_techposttitle  = bd.pk_defdoc
