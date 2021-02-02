@@ -35,8 +35,9 @@ class ExportHMCHandler(BaseHandler):
 
         staff_no = self.get_argument('staffNo')
         name = self.get_argument('name')
+        group_value = self.get_argument('groupValue')
 
-        url = ExportModel.export_hmc(staff_no, name)
+        url = ExportModel.export_hmc(staff_no, name, group_value)
         data = {
             'url': url
         }

@@ -12,6 +12,9 @@ HANDLERS = [
     (r"/api/getUserInfo", dd_handlers.UserHandler),
     # 员工管理
     (r"/api/huaMingCe", user_handlers.HuaMingCeHandler),
+    (r"/api/orgList", user_handlers.OrgList),
+    (r"/api/groupsList", user_handlers.GroupsList),
+
     # 导出
     (r"/api/exportHuaMingCe", export_handlers.ExportHMCHandler),
 ]

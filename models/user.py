@@ -40,7 +40,7 @@ class UserModel(object):
 
     # 获取花名册
     @classmethod
-    def hua_ming_ce(cls, page, page_size, staff_no, name):
+    def hua_ming_ce(cls, page, page_size, staff_no, name, group_value):
         try:
             # 获取当前时间
             now = datetime.now()
@@ -50,12 +50,17 @@ class UserModel(object):
 
             name_sql = ''
             staff_no_sql = ''
+            group_value_sql = ''
 
             if name:
                 name_sql =  f'and ss.name like \'%{name}%\''
 
             if staff_no:
                 staff_no_sql = f'and ss.code = \'{staff_no}\''
+
+            if group_value:
+                group_value_sql = f'and ss.pk_org = \'{group_value}\''
+
             sql = '''select ss.code,ss.name, org.name as ORGNAME,op.postname, br.name as jiguan, bd.name as minzu,
 CASE ss.sex  WHEN 1 THEN '男'  WHEN 2 THEN '女'  ELSE '其他' END as sex ,
 bd2.name as hukouxingzhi , br2.name as hukousuozaidi, bd3.name as zhengzhimianmao , bd4.name as hunyinzhuangkuang ,
@@ -117,8 +122,8 @@ and job.lastflag = 'Y'
 and ss.name not like '%%测试%%'
 and jt.name in ('正式员工','全职','车间在职', '试用期员工', '退休返聘') 
 and ss.code not like '%%L%%' 
-%s %s
-order by d.joindate desc'''%(year, name_sql, staff_no_sql)
+%s %s %s
+order by d.joindate desc'''%(year, name_sql, staff_no_sql,group_value_sql)
 
             num_sql = '''select count(ss.code) as TOTALNUM
 from bd_psndoc ss
@@ -172,8 +177,8 @@ and job.lastflag = 'Y'
 and ss.name not like '%%测试%%'
 and jt.name in ('正式员工','全职','车间在职', '试用期员工', '退休返聘') 
 and ss.code not like '%%L%%' 
-%s %s
-order by d.joindate desc''' % (name_sql, staff_no_sql)
+%s %s %s
+order by d.joindate desc''' % (name_sql, staff_no_sql,group_value_sql)
 
             df_num = pd.read_sql(num_sql, con=cls.db_nc)
             total_num = df_num['TOTALNUM'][0]
@@ -195,9 +200,6 @@ order by d.joindate desc''' % (name_sql, staff_no_sql)
             for index, row in df_records.iterrows():
                 last_dept = row[40]
 
-                # dept_list = cls.get_dept_list(row[40], [])
-                # row['dept_list'] = dept_list
-
                 if last_dept in dept_dic:
                     dept_list = dept_dic[last_dept]
                     row['dept_list'] = dept_list
@@ -206,7 +208,6 @@ order by d.joindate desc''' % (name_sql, staff_no_sql)
                     dept_dic[last_dept] = dept_list
                     row['dept_list'] = dept_list
                 user_list.append(row)
-
             df = pd.DataFrame(user_list)
             df = df.to_json(orient='records')
 
@@ -231,3 +232,141 @@ order by d.joindate desc''' % (name_sql, staff_no_sql)
             return dept_list
 
         return cls.get_dept_list(dept_father_id, dept_list)
+
+    @classmethod
+    def get_dept_id_list(cls, dept_id, dept_list):
+        dept_info = cls.get_dept_info(dept_id)
+        dept_father_id = dept_info['PK_FATHERORG'][0]
+        dept_list.insert(0, dept_id)
+        if dept_father_id == '~':
+            return dept_list
+
+        return cls.get_dept_list(dept_father_id, dept_list)
+
+    @classmethod
+    def get_org_list(cls):
+        try:
+            get_org_sql = '''select ss.name,job.pk_dept,dp.name,ss.pk_org,org.name
+    from bd_psndoc ss
+    inner join hi_psnjob job on ss.pk_psndoc = job.pk_psndoc
+    inner join bd_psncl jt on jt.pk_psncl = job.pk_psncl
+    left join org_dept dp on dp.pk_dept = job.pk_dept
+    left join org_orgs org on dp.pk_org = org.pk_org
+    where job.endflag = 'N'
+    and job.ismainjob = 'Y'
+    and job.lastflag = 'Y'
+    and ss.name not like '%测试%'
+    and jt.name in ('正式员工','全职','车间在职', '试用期员工', '退休返聘') 
+    and ss.code not like '%L%' '''
+
+            df_records = pd.read_sql(get_org_sql, con=cls.db_nc)
+            org_dict = {}
+            org_list = []
+            for index, row in df_records.iterrows():
+                last_dept = row[1]
+                first_dept = row[3]
+
+                if first_dept in org_dict:
+                    org_dict_item = org_dict[first_dept]
+                    num = org_dict_item['num']
+                    org_dict_item['num'] = num + 1
+                    org_dict[first_dept] = org_dict_item
+                else:
+                    org_dict_item = {
+                        'label': row[4],
+                        'value': first_dept,
+                        'num': 1,
+                        'fatherCode': '0'
+                    }
+                    org_dict[first_dept] = org_dict_item
+
+                cls.get_dept_org(first_dept, last_dept, org_dict)
+                # cls.get_dept_org('0001A31000000002DQ1F', '1001V1100000003JR0KL', org_dict)
+
+            print(org_dict)
+            for key in org_dict:
+                item = org_dict[key]
+                org_list.append(item)
+            df = pd.DataFrame(org_list)
+            df = df.to_json(orient='records')
+
+            return df
+        except Exception as e:
+            print(e)
+
+    @classmethod
+    def get_dept_org(cls, first_dept, dept_id, org_dict):
+        try:
+            dept_info = cls.get_dept_info(dept_id)
+            dept_name = dept_info['NAME'][0]
+            dept_father_id = dept_info['PK_FATHERORG'][0]
+            if dept_id in org_dict:
+                org_dict_item = org_dict[dept_id]
+                num = org_dict_item['num']
+                org_dict_item['num'] = num + 1
+                org_dict[dept_id] = org_dict_item
+            else:
+                father_code = dept_father_id
+                if dept_father_id == '~':
+                    father_code = first_dept
+                org_dict_item = {
+                    'label': dept_name,
+                    'value': dept_id,
+                    'num': 1,
+                    'fatherCode': father_code
+                }
+                org_dict[dept_id] = org_dict_item
+            if dept_father_id == '~':
+                return org_dict
+
+            return cls.get_dept_org(first_dept, dept_father_id, org_dict)
+        except Exception as e:
+            print(e)
+
+    @classmethod
+    def get_groups_list(cls):
+        try:
+            get_org_sql = '''select ss.name,job.pk_dept,dp.name,ss.pk_org,org.name
+    from bd_psndoc ss
+    inner join hi_psnjob job on ss.pk_psndoc = job.pk_psndoc
+    inner join bd_psncl jt on jt.pk_psncl = job.pk_psncl
+    left join org_dept dp on dp.pk_dept = job.pk_dept
+    left join org_orgs org on dp.pk_org = org.pk_org
+    where job.endflag = 'N'
+    and job.ismainjob = 'Y'
+    and job.lastflag = 'Y'
+    and ss.name not like '%测试%'
+    and jt.name in ('正式员工','全职','车间在职', '试用期员工', '退休返聘') 
+    and ss.code not like '%L%' '''
+
+            df_records = pd.read_sql(get_org_sql, con=cls.db_nc)
+            group_dict = {}
+            group_list = []
+            for index, row in df_records.iterrows():
+                key = row[3]
+
+                if key in group_dict:
+                    group_dict_item = group_dict[key]
+                    num = group_dict_item['num']
+                    group_dict_item['num'] = num + 1
+                    group_dict[key] = group_dict_item
+                else:
+                    group_dict_item = {
+                        'label': row[4],
+                        'value': key,
+                        'num': 1
+                    }
+                    group_dict[key] = group_dict_item
+
+            print(group_dict)
+            for key in group_dict:
+                item = group_dict[key]
+                # item['label'] = item['label'] + '(' + item['num'] + ')'
+                group_list.append(item)
+            print(group_list)
+            df = pd.DataFrame(group_list)
+            df = df.to_json(orient='records')
+
+            return df
+        except Exception as e:
+            print(e)

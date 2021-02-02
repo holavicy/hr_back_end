@@ -23,6 +23,40 @@ class UserInfoHandler(BaseHandler):
         self.write(json_encode(response))
 
 
+class OrgList(BaseHandler):
+    def get(self):
+
+        response = {
+            'code': 0,
+            'data': '',
+            'errorMsg': ''
+        }
+
+        df_records = UserModel.get_org_list()
+        data = {
+            'list': json.loads(df_records)
+        }
+        response['data'] = data
+        self.write(json_encode(response))
+
+
+class GroupsList(BaseHandler):
+    def get(self):
+
+        response = {
+            'code': 0,
+            'data': '',
+            'errorMsg': ''
+        }
+
+        df_records = UserModel.get_groups_list()
+        data = {
+            'list': json.loads(df_records)
+        }
+        response['data'] = data
+        self.write(json_encode(response))
+
+
 class UserListHandler(BaseHandler):
 
     def get(self):
@@ -58,13 +92,14 @@ class HuaMingCeHandler(BaseHandler):
         page_size = self.get_argument('pageSize')
         staff_no = self.get_argument('staffNo')
         name = self.get_argument('name')
+        group_value = self.get_argument('groupValue')
         response = {
             'code': 0,
             'data': '',
             'errorMsg': ''
         }
 
-        total_num, df_records = UserModel.hua_ming_ce(page, page_size, staff_no, name)
+        total_num, df_records = UserModel.hua_ming_ce(page, page_size, staff_no, name, group_value)
         if isinstance(total_num, int):
             total_num = total_num
         else:
